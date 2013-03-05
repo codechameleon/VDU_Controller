@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <pthread.h>
+#include "proj2.h"
 
 /* Shared memory */
 extern char buffer[7];
@@ -13,16 +11,25 @@ extern pthread_mutex_t mutex1;
  * buffer is not empty. 
  */
 void bufferWriter(char data[]) {
-  printf("%s\n",data);
-	//pthread_mutex_lock(&mutex1);
-
-	//pthread_mutex_unlock(&mutex1);
+  int i = 0;
+  
+	pthread_mutex_lock(&mutex1);
+	
+	if (current == 0) {
+		
+		for (i=0; i < 7; i++) {
+			buffer[i] = data[i];
+			current++;
+		}
+	}
+	
+	pthread_mutex_unlock(&mutex1);
 }
 
 /* Reads data from an input file and writes the data into the shared 
  * memory.
  */
-void devDriver() {
+void *devDriver(void * args) {
 
   char ch;
 	char data[7];

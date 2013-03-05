@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <ctype.h>
+#include "proj2.h"
 
 /* Shared memory */
 extern char buffer[7];
@@ -10,20 +7,17 @@ extern int current;
 /* mutex */
 extern pthread_mutex_t mutex1;
 
-/* Processes input data that consists of text strings, commands,
- * and possibly errors.
- */
-void controller(char input[]) {
-
-	
-}
-
 /* Returns the next input character form the buffer if the buffer is
  * not empty.
  */
 char buffReader() {
 
 	 pthread_mutex_lock( &mutex1 );
+	 
+	 if (current != 0) {
+		 return buffer[current];
+		 current--;
+	}
 
 	 pthread_mutex_unlock( &mutex1 );
 }
@@ -42,3 +36,18 @@ void execComm(char comm []) {
 void displayText(char line[]) {
 }
 
+/* Processes input data that consists of text strings, commands,
+ * and possibly errors.
+ */
+void *controller(void * args) {
+
+	char ch;
+	char word[6];
+	
+	ch = buffReader();
+	printf("%c",ch);
+	//if (isprint(ch)) {
+		
+	//}
+	
+}
