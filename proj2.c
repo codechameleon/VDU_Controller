@@ -1,37 +1,38 @@
 #include "proj2.h"
 
-/* a mutex variable to ensure correct access to shared memory */
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+// mutex and condition variables to ensure correct access to shared memory
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t reading_done = PTHREAD_COND_INITIALIZER;
+pthread_cond_t writing_done = PTHREAD_COND_INITIALIZER;
 
-/* Shared memory */
+// memory shared between threads
+int current = 0;
 char buffer[7];
-int current;
 
+int main()
+{
+   	int rc1, rc2;
+   	int x = 1, y = 2;
+   	pthread_t thread1, thread2;
 
-int main() {
-	
-	int rc1, rc2;
-	pthread_t thread1, thread2;
-	int i = 0;
-	int j = 0;
+   	/* create two threads, each runing a different function */
 
+   	if( (rc1=pthread_create( &amp;thread1, NULL, devDriver, &amp;x)) )
+   	{
+      		printf("Thread creation failed: %d\n", rc1);
+   	}
 
-   /* create two threads, each runing a different function */
+   	if( (rc2=pthread_create( &amp;thread2, NULL, controller, &amp;y)) )
+   	{
+      		printf("Thread creation failed: %d\n", rc2);
+   	}
 
-   if( (pthread_create( &thread1, NULL, devDriver, &i)))
-   {
-      printf("Thread creation failed: %d\n", rc1);
-   }
+   	/* wait till each thread is complete before main continues */
+   	pthread_join( thread1, NULL);
+   	pthread_join( thread2, NULL); 
 
-   if( (pthread_create( &thread2, NULL, controller, &j)))
-   {
-      printf("Thread creation failed: %d\n", rc2);
-   }
+   	printf("\nthe end\n");
 
-   /* wait till each thread is complete before main continues */
-
-   pthread_join( thread1, NULL);
-   pthread_join( thread2, NULL); 
-return 0;
-
+   	return 0;
 }
+

@@ -1,15 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <ctype.h>
 
-char buffReader();
-void execComm(char comm[]);
-void displayText(char line[]);
-void bufferWriter(char data[]);
+#include 
+#include 
+#include 
+#include 
+#include 
+#include 
 
-
-
-void *controller(void * args);
-void *devDriver(void * args);
+void bufferWriter(char buff[]);
+char bufferReader();
+void * devDriver(void * arg);
+void * controller(void * arg);

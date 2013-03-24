@@ -1,38 +1,24 @@
 #include "proj2.h"
 
-/* Shared memory */
-extern char buffer[7];
-extern int current;
+extern pthread_mutex_t mutex;		
+extern pthread_cond_t reading_done;
+extern pthread_cond_t writing_done;
 
-/* mutex */
-extern pthread_mutex_t mutex1;
+extern int  current;			 
+extern char buffer[];
 
-/* Writes a block of seven characters into the buffer as soon as the 
- * buffer is not empty. 
- */
-void bufferWriter(char data[]) {
-  int i = 0;
-  
-	pthread_mutex_lock(&mutex1);
-	
-	if (current == 0) {
-		
-		for (i=0; i < 7; i++) {
-			buffer[i] = data[i];
-			current++;
-		}
-	}
-	
-	pthread_mutex_unlock(&mutex1);
-}
+// igore the parameter arg which is not useful in this project	
 
-/* Reads data from an input file and writes the data into the shared 
- * memory.
- */
-void *devDriver(void * args) {
-
-  char ch;
-	char data[7];
+// read seven characters from the input file into an array
+// and use bufferWritter() with that array as the parameter
+// to store those characters in the buffer shared between 
+// threads; do this repeatedly until EOF is reached.  
+// note that EOF needs to be stored in the buffer as well. 
+void * devDriver(void * arg)
+{
+ 
+	char ch;
+	char data[6];
 	int i = 0;
 
 	/* Opens and reads input file */
@@ -42,15 +28,45 @@ void *devDriver(void * args) {
 	if (inFile == NULL) {
 		printf("File could not be opened\n");
 	}
-
+  
+	
 	while ( ! feof(inFile)) {
-	  for (i=0; i < 7; i++) {
-	    fscanf(inFile,"%c",&ch);
+	  for (i=0; i &lt; 7; i++) {
+	    fscanf(inFile,"%c",&amp;ch);
 	    data[i] = ch;
+	  
 	  }
-	  bufferWriter(data);
-     
+	   bufferWriter(data);
 	}
+	
+	
+	/* Save eof to end */ 
+	data[0] = EOF;
+	bufferWriter(data);
+	    
+	
+	
+    return 0;
+	
+}
 
+// bufferWriter() stores the seven characters in array data into the  
+// shared buffer
+
+void bufferWriter(char data[])
+{
+
+   	pthread_mutex_lock(&amp;mutex);
+	
+	// wait if the current set of characters is finished yet
+	if (current &lt; 7) 
+		pthread_cond_wait(&amp;reading_done, &amp;mutex);
+ 	strncpy(buffer, data, 7);
+	current = 0;
+	
+	// signal to reader when the next set of characters is ready
+	pthread_cond_signal(&amp;writing_done);
+
+  	pthread_mutex_unlock(&amp;mutex);
 }
 
